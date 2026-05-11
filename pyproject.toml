@@ -233,13 +233,11 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["src/pull_request_fixer"]
+source = ["pull_request_fixer"]
 omit = [
     "*/tests/*",
     "*/test_*",
     "*/__pycache__/*",
-    "*/venv/*",
-    "*/.venv/*",
 ]
 
 [tool.coverage.report]
