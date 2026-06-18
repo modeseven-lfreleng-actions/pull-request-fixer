@@ -365,7 +365,7 @@ url = http://hooks.example.com/notify
         assert was_modified is True
         assert new.count("https://") == 3
         assert "http://" not in new
-        assert "api.example.com" in new
+        assert "endpoint = https://api.example.com/v1" in new
 
     def test_normalize_quote_style(
         self, fixer: FileFixer, tmp_dir: Path
