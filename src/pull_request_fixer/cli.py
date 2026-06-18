@@ -11,6 +11,7 @@ import logging
 import re
 import sys
 from typing import Any
+from urllib.parse import urlparse
 
 from dependamerge import get_default_workers
 from rich.console import Console
@@ -91,15 +92,19 @@ def parse_target(target: str) -> tuple[str, str]:
         # It's a specific PR URL
         return ("pr", target)
 
-    # Check if it's a GitHub URL
-    if "github.com" in target:
-        # Extract org from URL: https://github.com/ORG or https://github.com/ORG/...
-        parts = target.split("github.com/")
-        if len(parts) > 1:
-            # Get the part after github.com/
-            path = parts[1]
-            # Split by / and take first part (the org)
-            org = path.split("/")[0]
+    # Check if it's a GitHub URL by parsing it and validating the host.
+    # A substring check such as ``"github.com" in target`` is unsafe because
+    # a host like ``github.com.evil.example`` would also match, so parse the
+    # URL and compare the hostname against an explicit allowlist of the
+    # GitHub web hosts. URLs without a scheme (e.g. ``github.com/org``) are
+    # treated as network-path references for parsing.
+    parse_input = target if "://" in target else f"//{target}"
+    parsed = urlparse(parse_input)
+    hostname = (parsed.hostname or "").lower()
+    if hostname in ("github.com", "www.github.com"):
+        # Extract org from the URL path: /ORG or /ORG/...
+        org = parsed.path.lstrip("/").split("/")[0]
+        if org:
             return ("org", org)
 
     # Not a URL, return as organization
@@ -1715,8 +1720,7 @@ async def create_pr_comment(
             [
                 "",
                 "---",
-                "*This fix was automatically applied by "
-                "[pull-request-fixer](https://github.com/lfreleng-actions/pull-request-fixer)*",
+                "*This fix was automatically applied by [pull-request-fixer](https://github.com/lfreleng-actions/pull-request-fixer)*",
             ]
         )
 
@@ -1828,8 +1832,7 @@ async def create_file_fix_comment(
         lines.extend(
             [
                 "---",
-                "*This fix was automatically applied by "
-                "[pull-request-fixer](https://github.com/lfreleng-actions/pull-request-fixer)*",
+                "*This fix was automatically applied by [pull-request-fixer](https://github.com/lfreleng-actions/pull-request-fixer)*",
             ]
         )
 

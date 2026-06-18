@@ -284,8 +284,12 @@ class PRScanner:
                     break
                 yield item
         finally:
-            # Ensure producer completes
-            await producer_task
+            # Ensure the producer task completes and surface any exception it
+            # raised. ``gather`` wraps the single task so the cleanup is an
+            # explicit call expression: a bare ``await producer_task`` is
+            # functionally equivalent but CodeQL reports it as a statement
+            # with no effect.
+            await asyncio.gather(producer_task)
 
     async def _iter_org_repositories_with_open_prs(
         self, organization: str

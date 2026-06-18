@@ -272,7 +272,6 @@ class TestBulkPRCommitFetching:
         # assert "pr2:" in query
         # assert "pullRequest(number: 1)" in query
         # assert "pullRequest(number: 2)" in query
-        pass  # Test skipped - function not implemented
 
     async def test_bulk_query_batching(self):
         """Test that large PR lists are batched correctly."""
@@ -290,7 +289,6 @@ class TestBulkPRCommitFetching:
         #
         # # Verify GraphQL was called 3 times (3 batches)
         # assert mock_client.graphql.call_count == 3
-        pass  # Test skipped - function not implemented
 
 
 @pytest.mark.asyncio

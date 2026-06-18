@@ -44,13 +44,15 @@ async def test_token_validity(token: str) -> tuple[bool, dict[str, Any]]:
             user_data = response.json()
             scopes = response.headers.get("X-OAuth-Scopes", "")
 
+            scope_list = [s.strip() for s in scopes.split(",") if s.strip()]
+
             print("✓ Token is VALID")
             print(f"  User: {user_data.get('login')}")
             print(f"  Name: {user_data.get('name')}")
             print(f"  Type: {user_data.get('type')}")
-            print(f"  Scopes: {scopes}")
-
-            scope_list = [s.strip() for s in scopes.split(",") if s.strip()]
+            # Avoid logging the raw scope string, which is derived from the
+            # authenticated request; report only the non-sensitive count.
+            print(f"  Scopes granted: {len(scope_list)}")
 
             # Check required scopes
             has_repo = "repo" in scope_list
@@ -405,7 +407,8 @@ async def main() -> None:
     print("GitHub Organization Access Diagnostic Tool")
     print("=" * 80)
     print(f"Organization: {org}")
-    print(f"Token: {token[:10]}...{token[-4:]}")
+    # Never log token contents (even partially); report only its length.
+    print(f"Token: provided ({len(token)} characters)")
 
     # Run all tests
     token_valid, user_data = await test_token_validity(token)
