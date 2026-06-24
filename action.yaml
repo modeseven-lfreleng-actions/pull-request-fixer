@@ -23,15 +23,24 @@ runs:
     - name: "Friendly Name"
       id: code
       shell: bash
+      env:
+        INPUT_INPUT: ${{ inputs.input }}
       run: |
         # Friendly Name
-        input="${{ inputs.input }}"
+        input="$INPUT_INPUT"
         if [ -z "$input" ]; then
           echo "Error: mandatory input was not set/configured ❌"
           exit 1
         fi
 
-        echo "output=$input" >> "$GITHUB_ENV"
-        echo "output=$input" >> "$GITHUB_OUTPUT"
+        # Emit via the documented multiline-delimiter form so a value
+        # containing newlines cannot append additional output keys
+        # (output-injection hardening).
+        delimiter="ghadelimiter_${RANDOM}${RANDOM}${RANDOM}"
+        {
+          printf '%s<<%s\n' "output" "$delimiter"
+          printf '%s\n' "$input"
+          printf '%s\n' "$delimiter"
+        } >> "$GITHUB_OUTPUT"
         echo "Action received: $input ✅"
         echo "Action received: $input ✅" >> "$GITHUB_STEP_SUMMARY"
